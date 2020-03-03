@@ -1,35 +1,18 @@
 defmodule FpPractice do
   def student_staff_name_group(classes) do
-    # TODO: implement algorithm that convert from:
-    #
-    # [
-    #   %{
-    #     name: "1A",
-    #     teacher: %{first_name: "John", last_name: "Doe", age: 33},
-    #     assistants: nil,
-    #     students: []
-    #   },
-    #   %{
-    #     name: "1B",
-    #     teacher: nil,
-    #     assistants: [%{first_name: "John", last_name: "Levis", age: 32}],
-    #     students: [
-    #       %{first_name: "John", last_name: "Ive", age: 31},
-    #       %{first_name: "Tricia", last_name: "Garrett", age: 28},
-    #     ]
-    #   }
-    # ]
-    #
-    # to (you need to remove persons that age is less than 30):
-    #
-    # %{
-    #   staff: %{
-    #     "John" => ["John Doe", "John Levis"]
-    #   },
-    #   students: %{
-    #     "John" => ["John Ive"]
-    #   }
-    # }
+    gt_30 = fn x -> x.age >= 30 end
+    get_full_name = fn x -> x.first_name <> " " <> x.last_name end
+    get_first_name = fn n -> List.first(String.split(n, " ")) end
+
+    cc = classes
+    |> Enum.map(fn %{teacher: t, assistants: a, students: s} -> %{staff: List.wrap(t) ++ List.wrap(a), students: List.wrap(s)} end)
+    |> Enum.map(fn %{staff: sf, students: st} -> %{staff: Enum.filter(sf, gt_30), students: Enum.filter(st, gt_30)} end)
+    |> Enum.map(fn %{staff: sf, students: st} -> %{staff: Enum.map(sf, get_full_name), students: Enum.map(st, get_full_name)}end)
+    |> Enum.reduce(fn %{staff: sf, students: st}, accu -> %{staff: accu.staff ++ sf, students: accu.students ++ st} end)
+
+    if %{staff: sf, students: st} = cc do
+      %{staff: Enum.group_by(sf, get_first_name), students: Enum.group_by(st, get_first_name)}
+    end
   end
 
   def test_classes do
